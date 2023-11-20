@@ -102,9 +102,36 @@ export class AuthenticationController {
     }
   }
 
-  public refreshToken(req: Request, res: Response) {
+  public async refreshToken(req: Request, res: Response) {
     try {
-      // user.refreshToken = undefined;
+      const currentUser = JSON.parse(JSON.stringify(req.user));
+
+      if (!currentUser) return res.status(401).json({ message: "Unauthorize!" });
+
+      const user = await UserModel.findOne({ _id: currentUser.id});
+
+      if (!user) return res.status(400).json({ message: "User does not exist!" });
+
+      const payload: Payload = {
+        id: user._id.toString(),
+        username: user.username,
+      }
+
+      const token = generateToken(payload); 
+
+      const refreshToken = token.refreshToken;
+      const refreshTokenSalt = await random();
+
+      user.refreshToken = await hash(refreshTokenSalt, refreshToken);
+      user.refreshTokenSalt = refreshTokenSalt;
+
+      await user.save();
+
+      return res.status(200).json({ 
+        id: user._id,
+        username: user.username,
+        token: token, 
+    });
     } catch(err) {
       return res.status(500).json({ message: err.message });
     }

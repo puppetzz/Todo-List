@@ -1,5 +1,5 @@
+import { createUserDto } from 'types/create-user.dto';
 import { UserModel } from '../models/users.model';
-import { User } from '../types/user.type';
 
 export class UserService {
   constructor() {
@@ -17,9 +17,15 @@ export class UserService {
     const user = await UserModel.findById(id);
     return user; 
   }
+  
+  public async getUserByUsername(username: string) {
+    const user = await UserModel.findOne({ username: username });
+    return user;
+  }
 
-  public async createUser(user: User) {
+  public async createUser(user: createUserDto) {
     const newUser = await UserModel.create(user);
     return newUser;
   }
+
 }
