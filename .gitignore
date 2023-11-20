@@ -1,0 +1,11 @@
+/BE/node_modules
+/BE/.env
+
+/FE/node_modules
+
+/FE/
+/FE/npm-debug.log*
+/FE/yarn-debug.log*
+/FE/yarn-error.log*
+/FE/pnpm-debug.log*
+/FE/lerna-debug.log*
