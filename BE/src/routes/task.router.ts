@@ -13,9 +13,9 @@ class TaskRouter extends BaseRouter {
   protected init () {
     this.router.get("/", this.taskController.getTasks);
     this.router.get('/user/:id', passport.authenticate('jwt-access', { session: false }), this.taskController.getTasksByUserId);
-    this.router.post('/', this.taskController.createTask);
-    this.router.patch('/:id', this.taskController.updateTask);
-    this.router.delete('/:id', this.taskController.deleteTask);
+    this.router.post('/', passport.authenticate('jwt-access', { session: false }), this.taskController.createTask);
+    this.router.patch('/:id', passport.authenticate('jwt-access', { session: false }), this.taskController.updateTask);
+    this.router.delete('/:id', passport.authenticate('jwt-access', { session: false }), this.taskController.deleteTask);
   }
 }
 

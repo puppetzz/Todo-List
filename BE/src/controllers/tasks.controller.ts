@@ -3,6 +3,11 @@ import { TaskService } from "../services/task.service";
 import { UserService } from "../services/user.service";
 import { Task } from "../types/task.type";
 
+type User = {
+  id: string;
+  username: string;
+}
+
 export class TaskController {
   private readonly taskService: TaskService;
   private readonly userService: UserService;
@@ -39,8 +44,6 @@ export class TaskController {
       const search = req.query.search as string || "";
       const userId = req.params.id;
 
-      console.log(req.user);
-
       const TaskResponse = await this.taskService.getTasksByUserId(page, limit, userId, search);
 
       return res.status(200).json(TaskResponse);      
@@ -51,10 +54,11 @@ export class TaskController {
 
   public async createTask(req: Request, res: Response): Promise<Response> {
     try {
-      const assignorId = req.body.assignor;
       const assigneeId = req.body.assignee;
+      const user  = JSON.parse(JSON.stringify(req?.user));
+      if (!user) return res.status(401).json({ message: "Unauthorized" }); 
 
-      const assignor = await this.userService.getUserById(assignorId);
+      const assignor = await this.userService.getUserById(user['id']);
       const assignee = await this.userService.getUserById(assigneeId);
 
       if (!assignor) {
@@ -83,9 +87,17 @@ export class TaskController {
 
   public async updateTask(req: Request, res: Response): Promise<Response> {
     try {
-      await this.taskService.updateTask(req.params.id, req.body);
+      const user  = JSON.parse(JSON.stringify(req?.user));
+      if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-      const updatedTask = await this.taskService.getTaskById(req.params.id);
+      // const task = await this.taskService.getTaskById(req.params.id);
+      // if (task.assignor._id.toString() !== user['id']) {
+      //   if (req.body.status) {
+
+      //   }
+      // }
+
+      const updatedTask = await this.taskService.updateTask(req.params.id, req.body);
 
       return res.status(200).json(updatedTask);
     } catch(err) {
@@ -96,6 +108,20 @@ export class TaskController {
   public async deleteTask(req: Request, res: Response): Promise<Response> {
     try {
       const task = await this.taskService.getTaskById(req.params.id);
+
+      const user  = JSON.parse(JSON.stringify(req?.user));
+      if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+      if (user['id'] === task.assignee._id.toString()) {
+        if (task.status !== "done") {
+          return res.status(400).json({ message: "You Must complete the task!" });
+        }
+      } else {
+        if (task.assignor._id.toString() !== user['id']) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      }
+
 
       if (!task) {
         return res.status(404).json({ message: "Task not found" });

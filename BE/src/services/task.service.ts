@@ -58,7 +58,13 @@ export class TaskService {
       .populate("assignee");
 
 
-    const totalTask = await TaskModel.countDocuments();
+    const totalTask = (await await TaskModel.find({
+      title: {
+        $regex: `.*${search}.*`, $options: 'i'
+      },
+      assignee: {
+        _id: userId
+      }})).length;
     
     const totalPage = Math.ceil(totalTask / limit);
 
@@ -72,7 +78,7 @@ export class TaskService {
 
   public async getTaskById(id: string) {
     const task = await TaskModel.find({ _id: id }).populate("assignor").populate("assignee");
-    return task;
+    return task[0];
   }
 
   public async createTask(task: Task) {
