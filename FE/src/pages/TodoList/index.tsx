@@ -40,6 +40,7 @@ const TodoListPages = () => {
     event: React.ChangeEvent<unknown>,
     page: number
   ) => {
+    event.preventDefault();
     setPage(page);
   };
 
@@ -62,21 +63,25 @@ const TodoListPages = () => {
   return (
     <div>
       <Nav />
-      <TaskDetail
-        work={'add'}
-        task={{
-          _id: '',
-          title: 'New Task',
-          content: 'New Task',
-          status: 'todo',
-          assignee: { _id: user?.id, username: user?.username },
-          assignor: { _id: user?.id, username: user?.username },
-          createAt: Date(),
-        }}
-        visible={isShowDetail}
-        onClose={handleCloseDetail}
-        reload={handleReload}
-      />
+      {!isShowDetail ? (
+        <></>
+      ) : (
+        <TaskDetail
+          work={'add'}
+          task={{
+            _id: '',
+            title: 'New Task',
+            content: 'New Task',
+            status: 'todo',
+            assignee: { _id: user?.id, username: user?.username },
+            assignor: { _id: user?.id, username: user?.username },
+            createAt: Date(),
+          }}
+          onClose={handleCloseDetail}
+          reload={handleReload}
+        />
+      )}
+
       <div className="flex flex-col justify-center items-center">
         <div className="flex justify-between items-center w-[700px]">
           <div className="w-[550px] my-4 rounded-full bg-slate-600 bg-opacity-5">

@@ -8,18 +8,22 @@ import closeIcon from '../assets/close.svg';
 import axios from '../lib/axios';
 import { User } from '../type/user';
 import useUser from '../hooks/useUser';
+import {
+  CreateErrorAlert,
+  CreateSuccessAlert,
+  DeleteSuccessAlert,
+  UpdateErrorAlert,
+  UpdateSuccessAlert,
+} from '../lib/toast';
 
 interface Props {
   task: Task;
   work: string;
-  visible: boolean;
   onClose: () => void;
   reload: () => void;
 }
 
 const TaskDetail = (props: Props) => {
-  if (!props.visible) return null;
-
   const [status, setStatus] = useState(props.task.status);
   const [title, setTitle] = useState(props.task.title);
   const [content, setContent] = useState(props.task.content);
@@ -31,28 +35,41 @@ const TaskDetail = (props: Props) => {
 
   const handleUpdateTask = async () => {
     try {
-      await axios.patch(`/task/${props.task._id}`, {
-        title: title,
-        content: content,
-        status: status,
-        assignee: assigneeId,
-      });
+      await axios.patch(
+        `/task/${props.task._id}`,
+        {
+          title: title,
+          content: content,
+          status: status,
+          assignee: assigneeId,
+        },
+        { headers: { Authorization: `Bearer ${user?.accessToken}` } }
+      );
+      UpdateSuccessAlert();
     } catch (error) {
       console.log(error);
+      UpdateErrorAlert();
     }
   };
 
   const handleCreateTask = async () => {
     try {
-      await axios.post(`/task/`, {
-        title: title,
-        content: content,
-        status: status,
-        assignee: assigneeId,
-        assignor: user.id,
-      });
+      await axios.post(
+        `/task/`,
+        {
+          title: title,
+          content: content,
+          status: status,
+          assignee: assigneeId,
+        },
+        {
+          headers: { Authorization: `Bearer ${user?.accessToken}` },
+        }
+      );
+      CreateSuccessAlert();
     } catch (error) {
       console.log(error);
+      CreateErrorAlert();
     }
   };
 
@@ -63,7 +80,10 @@ const TaskDetail = (props: Props) => {
 
   const handleDeleteTask = async () => {
     try {
-      await axios.delete(`/task/${props.task._id}`);
+      await axios.delete(`/task/${props.task._id}`, {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      DeleteSuccessAlert();
     } catch (error) {
       console.log(error);
     }

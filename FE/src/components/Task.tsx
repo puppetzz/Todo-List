@@ -6,6 +6,8 @@ import TaskDetail from './TaskDetail';
 import { useState } from 'react';
 import { Task } from '../type/task';
 import axios from '../lib/axios';
+import { DeleteErrorAlert, DeleteSuccessAlert } from '../lib/toast';
+import useUser from '../hooks/useUser';
 
 interface Props {
   task: Task;
@@ -17,6 +19,7 @@ const TaskCard = (props: Props) => {
   const [work, setWork] = useState('get');
   const [status, setStatus] = useState(props.task.status);
   const statusColor = checkStatusColor(status);
+  const user = useUser();
 
   const handleCloseDetail = () => {
     setIsShowDetail(false);
@@ -36,9 +39,15 @@ const TaskCard = (props: Props) => {
 
   const updateStatus = async (status: string) => {
     try {
-      await axios.patch(`/task/${props.task._id}`, {
-        status: status,
-      });
+      await axios.patch(
+        `/task/${props.task._id}`,
+        {
+          status: status,
+        },
+        {
+          headers: { Authorization: `Bearer ${user?.accessToken}` },
+        }
+      );
     } catch (error) {
       console.log(error);
     }
@@ -46,21 +55,28 @@ const TaskCard = (props: Props) => {
 
   const handleDeleteTask = async () => {
     try {
-      await axios.delete(`/task/${props.task._id}`);
+      await axios.delete(`/task/${props.task._id}`, {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      DeleteSuccessAlert();
     } catch (error) {
       console.log(error);
+      DeleteErrorAlert();
     }
   };
 
   return (
     <div>
-      <TaskDetail
-        work={work}
-        task={props.task}
-        visible={isShowDetail}
-        onClose={handleCloseDetail}
-        reload={props.reload}
-      />
+      {!isShowDetail ? (
+        <></>
+      ) : (
+        <TaskDetail
+          work={work}
+          task={props.task}
+          onClose={handleCloseDetail}
+          reload={props.reload}
+        />
+      )}
       <div className="flex justify-between p-4 px-3 border-b-[1px]">
         <div>
           <div
