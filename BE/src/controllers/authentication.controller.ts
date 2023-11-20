@@ -35,7 +35,26 @@ export class AuthenticationController {
       
       const user = await UserModel.findById(newUser._id);
 
-      return res.status(201).json(user);
+      const payload: Payload = {
+        id: user._id.toString(),
+        username: user.username,
+      }
+
+      const token = generateToken(payload);
+
+      const refreshToken = token.refreshToken;
+      const refreshTokenSalt = await random();
+
+      user.refreshToken = await hash(refreshTokenSalt, refreshToken);
+      user.refreshTokenSalt = refreshTokenSalt;
+
+      await user.save();
+
+      return res.status(201).json({
+        id: user._id,
+        username: username,
+        token: token,
+      });
     } catch(err) {
       return res.status(500).json({ message: err.message });
     }
