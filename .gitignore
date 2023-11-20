@@ -3,7 +3,6 @@
 
 /FE/node_modules
 
-/FE/
 /FE/npm-debug.log*
 /FE/yarn-debug.log*
 /FE/yarn-error.log*
